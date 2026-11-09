@@ -15,11 +15,19 @@ description: 终极口播视频 skill：中文口播稿 + 成品配音 → CPU �
 ## 流程
 
 ```
-① 文案 → ② 配音输入+时间戳(本机CPU) → ③ 素材 → ④ SHOTBOOK 层矩阵 → ⑤ 实现(全局系统 → 首镜先做先确认 → 其余镜头)
+① 文案 → ② 配音输入+时间戳(本机CPU) → ③ 素材 → ④ SHOTBOOK 层矩阵 → 用户审核确认 → ⑤ 实现(全局系统 → 首镜先做先确认 → 其余镜头)
                                 → ⑥ 渲染 → ⑦ 三重验收（机器闸全过 + 1 轮审片修 P0/P1）→ ⑧ 交付（可选续审 ≤3 轮）
 ```
 
 ## ⓪ 开工体检：统一依赖 + 画幅与视觉语言
+**必需输入**：口播稿 + 与稿子一致的口播人物视频（真人录播或已生成的数字人成品）+ 同步配音。
+可直接从人物视频提取配音；缺少人物视频时先请用户提供，不擅自改成只有旁白与 B-roll 的片子。
+AI 图片 / 视频仅作辅助 B-roll，不替代人物口播视频；人物素材仍按 host-footage.md 做音画同步与安全区检查。
+
+**生成能力先校验再启用**：开工时分别核验生图 API、生视频 API 的配置、鉴权、目标能力与可用性，按 `references/ai-broll.md` §0 记录结果。
+只有已校验可用的能力才参与③选型；未配置、校验失败或无法确认可用即关闭对应流程，使用真实素材 / 图库 / 动效卡继续。
+不自动安装生成服务、不索要配置、不将未启用的 AI 能力列为缺失素材或制作阻塞。
+
 **依赖只有一份**：所有口播工程的 `remotion/node_modules` 与 `workbench/node_modules` 都是指向 `<skill根>/runtime/node_modules` 的软链，版本只在
 `runtime/package.json` 里钉（`@remotion/*` 全家同号）。**新片开工第一件事**（用户 2026-09-15 定版：每次新做视频都要检查更新）：
 ```bash
@@ -45,6 +53,7 @@ bash <skill根>/runtime/check-runtime.sh --upgrade   # 装好共享依赖 + 共�
 
 ## ② 配音输入 → 预剪 → 字级时间戳（默认本机 CPU；可选 Fish Audio）
 **默认使用成品配音**：真人录音或任何 TTS 皆可，输入 = 一条完整配音（wav/mp3）+ 与之逐字一致的口播稿。
+人物视频仍是必需输入；此处仅说明音轨的来源。另配 TTS 必须与人物口型同步，不能用独立 TTS 代替缺少的人物视频。
 没有录音且用户选择合成时，可使用下面方案 B；它不会替换已有配音或默认的本机 CPU 流程。
 
 **②-0 配音预剪（真人录音必做；TTS 只会压气口，可跳过）**——剪掉口水词（嗯 / 呃 / 那个…）、结巴重说、过长停顿，
@@ -102,13 +111,17 @@ python3 <skill根>/scripts/semantic_annotate.py --sync-shots   # ④ 之后：�
 ```
 
 ## ③ 素材
+- **配乐单独选型**：开场音乐、正文 BGM、章节音乐与收尾按 `references/music-library.md` 的曲库候选与模板处理，
+  默认选授权现成音乐，不默认 Suno 生成。BGM 与逐卡短音效分轨设计；候选先核授权，实际口播混音样段确认后才定版，音乐不可替代口播人物视频。
+- **先选表达方式，再选卡**：真实证据用真素材；概念、比喻、假设场景仅在对应 API 通过⓪校验后可选 AI 图片或 AI 视频；精确数据、结构、对比用可控图表或动效卡。
+  AI 素材可直接成为镜头主体，不必再叠一张内容卡。涉及生成时先读 `references/ai-broll.md`（选型、生成、审核、落盘与接入）。
 - **素材清单从 ②-1 的语义标注生成，不靠拍脑袋**：`need` 是 `证据` 的句去截真页 / 找出处，`身份` 要头像与账号信息，`量化` 要图表或数据源，`entities` 里的人名 / 品牌 / 地点 / URL 就是检索词。
 - **先给每个镜头标素材模式（多选，可组合）**：`B-roll`（实拍视频）/ `图片`（照片 / 海报 / 插图）/ `截图`（网页 / 界面证据画面）/
-  `纯动效`——如"B-roll 打底 + 截图证据卡"。新闻/信息类话题证据优先：Playwright 实时截图比泛用 B-roll 更有信息量。
+  `纯动效`；B-roll / 图片可来自实拍、图库或 AI 生成，另写来源行区分。如"AI 视频打底 + 数据标注"。新闻/信息类话题证据优先。
   四档对应 taxonomy.md 输入类型代号 **V / 图 / 截图 / 文**，SHOTBOOK 每镜写一行 `素材：V（路径）· 图（路径）· 文`（格式见 ④）
-- **实拍素材是必需项，不是可选项**（2026-09-06 硬规）：全片零 B-roll / 图片 = 只有动效 + 口播人物 = 观众看到的是"讲 PPT"。
+- **图片或视频素材是必需项，允许 AI 生成，不强求实拍**：全片零 B-roll / 图片 = 只有动效 + 口播人物 = 观众看到的是"讲 PPT"。
   `preflight.py` 对账 SHOTBOOK：**零 V / 图 镜头直接 FAIL**，V / 图 镜头占比 < 1/3 WARN（要在 SHOTBOOK 给依据，如证据类题材以截图为主）。
-  「本片不做 B-roll」**不允许**写成设计决定；视频源搜不到就降级图片（Pexels photos 原图 → Pixabay），图片也没有才进「未完成 / 未采集清单」。
+  「本片不做 B-roll」**不允许**写成设计决定；按表达目的选择图库或 AI 生成，不必先穷尽图库。真实证据不可生成替代；缺少可用素材时进「未完成 / 未采集清单」。
   图片与视频同源同 key，采集规格（分辨率下限、落盘目录、登记）见 `references/broll-sources.md`「配图采集」
 - **真图硬规**：话题存在可截的真实页面（产品官网/GitHub/文档/画廊）时，
   成片中的浏览器/页面类镜头**禁止用代码 mock 冒充截图**——卡片 demo 里的灰条假 UI 是占位物，
@@ -154,7 +167,7 @@ python3 scripts/preflight.py --media-only --host remotion/public/dh/host.webm --
 #     时长与配音逐帧对齐 · 真实宽高比 · 素材盘点（实拍/图片/网页长图数）· sources.md 在册。任一 FAIL 不进 ④
 ```
 
-## ④ SHOTBOOK（必产出，实现前评审）
+## ④ SHOTBOOK（必产出，用户确认后才实现）
 先用 `references/shot-design.md` 给每个镜头填**三面分层工作单**（背景面/主体面/文字面 + 各面动效
 + 七种镜头类型预设），再按 `references/cinematography.md` §4 展开成层矩阵，范例 `references/shotbook-example.md`。
 每场景：一句意图 + 主体接力线 + 逐节拍层矩阵（节拍锚定字级时间戳；每行动作必须答得出"配合谁"）。
@@ -188,6 +201,8 @@ SHOTBOOK 每镜写**版式行**（栏跨度 + 组包围盒 + 对齐基准 + 字�
 与素材容器（出血全屏 / 装框 / 分屏格 / 底床 / 多图编排 / 3D 墙 / 长页）连续 3 镜至少换其一；同一条 B-roll 不进相邻两镜。单条 B-roll 按 shot-design.md §2⑦ 七式选、相邻镜不同式，
 多素材按 §2④′ 关系表；preflight 按节奏表 + 蒙皮行核（连用 / 占比 FAIL）。轮换是换构图不是加运动——每式内部仍只有相机极缓推拉。
 **每镜必写「选卡行」**（②-1 的语义 → 卡；候选由机器给）：
+先按③的表达选型判断是否需要内容卡。AI 场景已承担叙事时，可写「本镜无内容卡，AI 图片/视频承担主视觉」，
+保留素材、蒙皮行与呈现方式；视频可直接由 ThemeFrame 承接（现有预检给 WARN，需人工核实），图片可选轻运镜卡，不为用卡而叠卡。
 ```bash
 python3 <skill根>/scripts/card_match.py --out qa/card-candidates.md   # 语义 × 素材行 × 卡索引 → 每镜每个主句语义的可行候选 + 排序理由 + 落选理由
 ```
@@ -219,19 +234,37 @@ demo 库的 0.65 上限是试听口径不是成片口径）。实现时按 ⑤ �
 **cue 的 file 名以 `ls public/sfx/` 为准**（`pk:` 键名里的冒号导出成 `pk-`，
 个别键自带前缀会出现 `pk-transition-transition-soft` 这类双段名——名字错了渲染直接 404 失败）。
 
-**④→⑤ 闸：SHOTBOOK 写完先过 preflight 全量，再进实现**（③ 的素材体检 + SHOTBOOK 对账，任一 FAIL 挡住 ⑤）：
+**④→⑤ 闸：SHOTBOOK 写完先过 preflight 全量，再提交用户审核；两项都通过才进实现**（③ 的素材体检 + SHOTBOOK 对账，任一 FAIL 挡住 ⑤）：
 ```bash
 python3 scripts/preflight.py --shotbook SHOTBOOK.md --host remotion/public/dh/host.webm --fps 30 --voice audio/full.wav --shots remotion/shots.json --semantics semantics.json
 # SHOTBOOK 对账：每镜有「素材：」行 · V/图/截图 的文件都在盘上 · 零 V/图 镜头 FAIL · 占比 <1/3 WARN · 「未完成 / 未采集清单」节在册 · shots.json 与镜头 id 一致
 #           · 版式轮换：同卡连用 ≥3 镜 / 呈现卡 >1/3 / 节奏表连续 3 镜同形态同容器 FAIL；版式行复制 / 素材相邻复用 / 缺节奏表 WARN
 ```
 
+### ④-1 分镜审核确认（实现前必经）
+SHOTBOOK 与预检完成后，先向用户提交可审阅的方案：链接到完整 `SHOTBOOK.md`，并附一张简明逐镜表
+（镜头 id / 起止时间 / 对应口播 / 画面与素材 / 主要动效与转场），说明整体风格、版式节奏、样板镜及未完成项。
+有 AI 素材时，表中注明 AI 图片 / AI 视频、表达目的和选择理由，附实际生成图片或视频预览及来源记录；未生成不算已完成素材。
+有配乐时一并说明主配乐候选、开场/正文/收尾用法与干声区，⑤-1 样板镜含实际配乐混音；未试听的曲目明确标候选。
+素材附本地预览或缩略图；选卡可附已有 demo，标清它是动效参考，不是本片预览。不要只抛内部层矩阵让用户自行解读。
+
+明确询问「分镜确认，开始做样板镜」或「先改分镜」，**等待用户明确答复**。
+预检通过、用户未回复、只提出修改意见，均不算确认；确认前不进入 ⑤，不搭合成骨架、不实现或渲染样板镜。
+按意见更新方案后，给出改动摘要并再次提交审核。在 `SHOTBOOK.md` 的 G0 记录方案版本与审核状态
+（待确认 / 修改中 / 已确认）；只有收到明确答复才记录确认版本、日期及用户确认语句。
+
+确认后按该版本实现；后续若改变已确认的镜头顺序、主要素材、核心画面或整体风格，先提交受影响部分重新确认，
+未受影响部分沿用原确认。修错字、校正坐标、按已确认方案修复实现等不改变方案意图的调整无需重复确认。
+**分镜确认管内容与画面方案，⑤-1 样板镜确认管实际视听效果，两关都保留。**
+
 ## ⑤ 实现（Remotion）
+仅在 ④-1 当前分镜版本已获用户明确确认后开始。
 **先装全局系统再写场景**（代码 `template/motion-systems/`，规范正主 cinematography.md §2，运动做减法）：
 只装 **G1 CameraRig**（每场景一条极缓推进或拉出的 scale 曲线，1.00→1.04~1.06 或反向，不做 x/y/旋转/模糊，`impulses` 留空，shots.ts 表驱动）
 与 **G3 让位状态机**（`Live demoteAt` = 下一主体锚点 / Defocus，`idle` 关、落定即静置；**demoteAt 是降权留守不是退场**——
 元素压暗缩小后仍占着原槽、计入同屏预算，新主体不得摆进它的位置；旧名 `retireAt` 仍可用但已 deprecated，2026-09-06 因名字误导出过 P0 文字相撞）；
 G2 视差、G4 分幕色温可选、默认不装；主体 idle / 环境呼吸 vignette / 扫光 / 曝光脉冲 / 相机脉冲一律不做。
+AI 视频若已含明显运镜，该镜可固定外层相机，由源视频承担持续运动；在 SHOTBOOK 注明并照常过画面健康检查（ai-broll.md §6）。
 **G5 线稿示意图**（`schematic.tsx` + `icons.ts`）只给纯文镜装：DrawPath / DrawIcon / Connector / Node / Plate / Panel / Cross / Tick / Traveller / Label，
 全部 abs 秒驱动、机器一笔画、线到哪亮哪、一套皮；图标缺什么跑 `python3 scripts/fetch_icons.py <slug,...> --merge --out <工程里 icons.ts 的路径>`（不带 `--out` 写的是库内 `template/motion-systems/icons.ts`；Iconify lucide = ISC + 部分 Feather MIT，**根目录 `THIRD_PARTY_NOTICES.md` 随 icons.ts 一起拷进工程**并登记进 sources.md）。
 
@@ -481,6 +514,7 @@ X [`@VincentWei93`](https://x.com/VincentWei93) ·
 | 选动效/查参数和坑 | `references/taxonomy.md`（两道生成索引：输入类型 / 语义）→ `references/cards/` → `template/cards/`（tsx 源码）+ `demos/`/`gallery/`（预览） |
 | 口播稿逐句语义标注（②-1）· 选卡候选表 · 卡索引生成 | `references/semantic-annotation.md` · `scripts/semantic_annotate.py` · `scripts/card_match.py` · `scripts/cards_index.py` |
 | 找素材 · 配图采集 · 网页拍摄素材采集（全页 2× 长图 + DOM 坐标 JSON） | `references/broll-sources.md` |
+| AI 配图 / 概念 B-roll / 文生视频 / 图生视频（生成前选型、审核与接入） | `references/ai-broll.md` |
 | 开工体检（③ 素材期 `--media-only` / ④→⑤ 闸全量：人物素材帧率·重复帧·时长·比例 + SHOTBOOK 素材对账·未完成清单） | `scripts/preflight.py` |
 | 静止探针（母版前用真实合成帧差预判 freezedetect） | `scripts/freeze_probe.py` |
 | 人物素材（输入规格 / CPU 抠像 / 人脸安全区）· 与 B-roll 同屏怎么摆 | `references/host-footage.md` + `scripts/face_bbox.py` |
@@ -495,3 +529,4 @@ X [`@VincentWei93`](https://x.com/VincentWei93) ·
 | 机器闸（画面健康 / 保真 / 词落点+镜尾 / 音效） | `scripts/motion_check.py`（静止段+并发光栅抖动双判定）/ `scripts/card_lint.py`（卡片须复制自 template/cards）/ `scripts/beat_lint.py`（词落点对 timestamps + `--shots` 镜尾保护带）/ `scripts/sfx_check.py`（solo 在场 + `--mix` 可听度） |
 | 渲染提速（分段母版 / 批量静帧 / 空台预检 / 评审拼图）· 首镜先做先确认（⑤-1） | `scripts/render_shots.mjs`（段渲+拼装+音轨混入+帧数断言；`--changed sNN` 单镜头迭代 53s；`--only s01 --seg-audio --preview-dir` 样板镜有声预览、不渲整条音轨（⑤-1）；⑥-1.5 问用户整片还是逐镜）/ `scripts/render_stills.mjs`（一次 bundle 批量 still）/ `scripts/beat_gap_check.py`（渲染前空台预检）/ `scripts/contact_sheet.py`（QA 帧拼 3×4 网格） |
 | 动效配套音效 | 逐卡 cue 表 `demos/_lib/sfx-map.js`（口味纪律见 `references/demo-spec.md`「Demo 硬性要求」第 8 条）；制作端 `node scripts/sfx_dump.mjs` 导出采样 |
+| 开场音乐 / 正文 BGM / 章节音乐 / 收尾（曲库候选与口播混音模板） | `references/music-library.md`（独立于逐卡 SFX；现成授权曲库优先） |

@@ -188,9 +188,11 @@ python3 -m unittest discover -s scripts -p 'test_*fish*.py' -v
 | You bring (inputs) | The skill does |
 | --- | --- |
 | Narration script | Word-level timestamp alignment, with per-sentence QA flags |
-| Finished voiceover — any TTS or human recording | SHOTBOOK storyboarding: semantic beats, layer matrices, layout budgets |
-| Optional host footage — ordinary video works (keying + face-zone tooling included; green screen keys cleanest) | Remotion implementation on four global systems (camera / parallax / yield / environment), transitions, SFX placement |
+| Finished voiceover — any TTS or human recording | SHOTBOOK storyboarding: semantic beats, layer matrices, layout budgets; explicit user approval before implementation |
+| Required speaking-host footage — recorded or pre-generated, synchronized with narration (keying + face-zone tooling included) | Remotion implementation on four global systems (camera / parallax / yield / environment), transitions, SFX placement |
 | Optional B-roll / screenshots | Render + triple-gate QA (machine gates all green + one independent review round with P0/P1 fixed, then deliver; optional extra rounds, 3 max), loudness-normalized delivery |
+
+Speaking-host footage remains required; AI images and video are supplementary B-roll only. Validate image and video APIs separately before planning generation; missing, failed or unverified APIs disable the corresponding workflow without blocking normal production. Generated assets enter storyboard approval with actual previews; factual evidence still requires real sources. See [AI B-roll workflow](references/ai-broll.md).
 
 ## 📦 What's included
 
@@ -247,7 +249,7 @@ Chinese/English narration is fully supported.
 
 **What do I need to provide?**
 A narration script (text) and a finished voiceover (any TTS or human
-recording); host footage and B-roll are optional.
+recording), plus required speaking-host footage synchronized with it. Narration may be extracted from that footage; B-roll can be sourced by the agent. AI generation requires prior API validation.
 
 **Is it free?**
 Free for personal, educational, and research use (PolyForm Noncommercial

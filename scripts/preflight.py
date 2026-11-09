@@ -178,10 +178,10 @@ def inventory(root: str) -> dict[str, int]:
 def check_inventory(root: str, media_only: bool) -> None:
     sec = "素材盘点"
     c = inventory(root)
-    rec("INFO", sec, f"实拍视频 {c['video']} · 图片 {c['image']} · 网页长图 {c['pages']}（assets/ + public/，不含 sfx/dh/audio）")
+    rec("INFO", sec, f"视频 {c['video']} · 图片 {c['image']} · 网页长图 {c['pages']}（含 AI 生成；assets/ + public/，不含 sfx/dh/audio）")
     if c["video"] + c["image"] == 0:
         rec("WARN" if media_only else "INFO", sec,
-            "还没有任何实拍视频 / 图片——B-roll 或图片是必需项（SKILL.md ③：只有动效 + 口播人物 = 讲 PPT）"
+            "还没有任何视频 / 图片——B-roll 或图片是必需项（允许 AI 生成；SKILL.md ③：只有动效 + 口播人物 = 讲 PPT）"
             + ("；进 ④ 前把候选采回来" if media_only else "，由 SHOTBOOK 对账判定"))
     src = next((p for p in ("sources.md", "assets/sources.md", "research/sources.md") if os.path.exists(os.path.join(root, p))), None)
     if src:
@@ -689,7 +689,7 @@ def check_shotbook(root: str, shotbook: str, shots_json: str | None, min_ratio: 
                          f"层矩阵加一行「G5 线稿示意图 ← 讲 X 所以画 Y」（references/schematic.md §1、§3 语义图形词典），章节卡镜不算")
     ratio = len(footage) / len(shots)
     if not footage:
-        rec("FAIL", sec, "全片零 B-roll / 图片镜头——只有动效 + 口播人物 = 讲 PPT（SKILL.md ③ 硬规：实拍或图片素材是必需项，"
+        rec("FAIL", sec, "全片零 B-roll / 图片镜头——只有动效 + 口播人物 = 讲 PPT（SKILL.md ③：图片或视频素材是必需项，允许 AI 生成，"
                          "「本片不做 B-roll」不允许作为设计决定）")
     elif ratio < min_ratio:
         rec("WARN", sec, f"带 B-roll / 图片的镜头 {len(footage)}/{len(shots)} = {ratio:.0%} < {min_ratio:.0%}——"
@@ -738,7 +738,7 @@ def main() -> int:
     if a.host:
         check_host(a.host, a.fps, a.voice, a.host_box)
     else:
-        rec("WARN", "人物素材", "未给 --host：没有人物素材的片跳过；有人物素材却不给 = 体检白做")
+        rec("FAIL", "人物素材", "未给 --host：口播人物视频是必需输入，AI B-roll 或独立配音不能替代；请先提供人物视频")
     check_inventory(root, a.media_only)
     if not a.media_only:
         check_shotbook(root, a.shotbook, a.shots, a.min_footage_ratio)
@@ -746,7 +746,7 @@ def main() -> int:
     fails = [m for lv, _, m in results if lv == "FAIL"]
     warns = [m for lv, _, m in results if lv == "WARN"]
     print(f"\n== preflight {'FAIL' if fails else 'PASS'} ==  FAIL {len(fails)} · WARN {len(warns)}"
-          + ("" if fails else "  → 可进 ⑤ 实现" if not a.media_only else "  → 可写 SHOTBOOK"))
+          + ("" if fails else "  → 可提交 SHOTBOOK 用户审核，确认后才进 ⑤" if not a.media_only else "  → 可写 SHOTBOOK"))
     return 1 if fails else 0
 
 

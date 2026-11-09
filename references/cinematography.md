@@ -121,7 +121,7 @@ G2 视差与 G4 分幕色温降为可选。模板代码保留这些能力但默�
 - **每镜标题下第一行写「素材：」**（机器可读，`scripts/preflight.py` 逐个 stat）：
   `- 素材：V（public/broll/gpu.mp4）· 图（public/stills/a.jpg, public/stills/b.jpg）· 截图（public/pages/gh/page.png）· 文`
   代号同 taxonomy.md 输入类型索引（V = B-roll 视频 · 图 = 图片 · 截图 = 网页/界面证据 · 界 = 界面自演 · 文 = 纯文字 · 人 = 口播人物）；
-  V / 图 / 截图 必须给路径，"待采"= FAIL；全片零 V / 图 = FAIL（实拍素材是必需项，SKILL.md ③）。
+  V / 图 / 截图 必须给路径，"待采"= FAIL；全片零 V / 图 = FAIL（图片或视频素材是必需项，可为 AI 生成；SKILL.md ③、ai-broll.md）。
 - 结尾附每镜相机方向（推 / 拉、起止 scale）和英雄时刻层数。
 - **G0 必附「版式节奏表」**（2026-09-21 用户反馈"排版太固定"后加；写在逐镜矩阵**之前**——全片节奏摊在一张表里才看得出"八镜一个样"；
   `scripts/preflight.py` 按它核连续同态与容器种数，按各镜蒙皮行核同卡连用与占比）：

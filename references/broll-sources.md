@@ -1,11 +1,15 @@
-# 免费素材源（2026-08 实测验证 · 只收免署名源）
+# 图库与真实素材源（AI 生成另见 ai-broll.md）
+
+先按表达目的选源：真实事件、产品页面与事实证据走本页；抽象概念、比喻、假设场景仅在对应 API 开工校验通过后可走
+`ai-broll.md` 的 AI 图片 / 视频流程，不要求先搜遍图库。未配置或未通过则完全跳过对应生成流程，按本页采集，不要求补配置。
+口播人物视频始终必需，生成素材不替代它。下面的免署名限制针对图库，不代表 AI 服务免费或生成物自动拥有商用权。
 
 > **授权红线（2026-08-28 用户定版）：需要署名的 B-roll/配图源一律不接入**——
 > Dareful、Wikimedia Commons 视频、Vecteezy、Openverse 等 CC BY 系全部排除。
 > 唯一例外义务是 API 条款级的一行简介致谢（规则 3），那是 API 使用条款，不是素材授权署名。
 
 ## 推荐组合
-- **实拍素材是必需项**（SKILL.md ③，2026-09-06 硬规）：全片零 B-roll / 图片 = 动效 + 口播人物 = 讲 PPT。视频找不到降级图片，图片也没有才进 SHOTBOOK「未完成 / 未采集清单」，
+- **图片或视频素材是必需项，AI 生成也算**（SKILL.md ③）：全片零 B-roll / 图片 = 动效 + 口播人物 = 讲 PPT。图库路线视频找不到可降级图片，无可用素材才进 SHOTBOOK「未完成 / 未采集清单」，
   不允许写成"本片不做 B-roll"的设计决定。`scripts/preflight.py` 对账。
 - **视频 B-roll**：Pexels（主）→ Pixabay（备）→ Mixkit Free（逐条核对授权标签，见排除清单）→
   Coverr（接受其条款时；API 免费档只够开发用）→ NASA（航天/卫星/地球类）→ 无结果降级 **图片**（下一条）
@@ -83,7 +87,7 @@ GET https://api.pexels.com/v1/search?query=data%20center&orientation=landscape&s
 GET https://pixabay.com/api/?key=<KEY>&q=server+room&image_type=photo&orientation=horizontal&min_width=1920&per_page=20&safesearch=true
 # 免费档只给 largeImageURL（长边 ≤1280）——min_width 过滤的是原图尺寸，下载到的仍是 1280 版；不够横屏缓推，只当备选
 ```
-- 检索词与视频同一套英文视觉概念词（规则 1）；同一镜头**先搜视频再搜图片**，图片是降级不是并列首选（图片撑镜头要靠相机动，视频自带运动）。
+- 检索词与视频同一套英文视觉概念词（规则 1）；图库路线可先搜视频再搜图片；若只需定格细节或需要精确构图，可直接选图。AI 路线按 ai-broll.md 选型。
 - 落盘 `assets/stills/`（候选）→ 选中的进 `public/stills/`，文件名 `<镜号>-<概念词>-<源>-<id>.<ext>`。
 - **每张图和每条视频一样进 `sources.md`**（规则 6）：检索词、源站、ID/URL、授权、真实尺寸。
 - 竖图放横屏、只有一张图的镜头：`bed-echo-blur◉`（同源模糊底床）是标准答案；多图：`still-layout-relay◉` / `stack-fan-out◉` / `gallery-wall-dolly◉` / `timeline-photo-strip◉`。
