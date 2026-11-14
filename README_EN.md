@@ -192,7 +192,7 @@ python3 -m unittest discover -s scripts -p 'test_*fish*.py' -v
 | Required speaking-host footage — recorded or pre-generated, synchronized with narration (keying + face-zone tooling included) | Remotion implementation on four global systems (camera / parallax / yield / environment), transitions, SFX placement |
 | Optional B-roll / screenshots | Render + triple-gate QA (machine gates all green + one independent review round with P0/P1 fixed, then deliver; optional extra rounds, 3 max), loudness-normalized delivery |
 
-Speaking-host footage remains required; AI images and video are supplementary B-roll only. Validate image and video APIs separately before planning generation; missing, failed or unverified APIs disable the corresponding workflow without blocking normal production. Generated assets enter storyboard approval with actual previews; factual evidence still requires real sources. See [AI B-roll workflow](references/ai-broll.md).
+Speaking-host footage remains required; AI images and video are supplementary B-roll only. On first production use, ask separately whether to configure image and video models, use existing settings, or skip; remember each choice locally without repeated prompts. Validate opted-in APIs separately before generation; skipped, missing, failed or unverified APIs disable the corresponding workflow without blocking normal production. Generated assets enter storyboard approval with actual previews; factual evidence still requires real sources. See [AI B-roll workflow](references/ai-broll.md).
 
 ## 📦 What's included
 

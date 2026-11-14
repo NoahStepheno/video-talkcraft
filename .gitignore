@@ -1,5 +1,6 @@
 # 制作的单片工程与成品视频不进库（仓库只收 skill 本体）
 demo/
+/projects/
 *.mp4
 
 # 画廊预览视频不进 git：存放在 GitHub release `gallery-media`（同 video-shotcraft），

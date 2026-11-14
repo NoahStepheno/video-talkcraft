@@ -14,6 +14,11 @@ description: 终极口播视频 skill：中文口播稿 + 成品配音 → CPU �
 
 ## 流程
 
+**先按请求分流**：已有口播只去重/加字幕，或仅修改章节进度、关键词、封面时，先读
+[轻剪口播与局部增强复盘](references/light-edit-lessons.md)，仅执行所需步骤。
+用户说“其他步骤省略”就不触发完整管线的分镜、素材、模型配置、依赖升级或工作台要求；必要的剪口、字幕和音画同步检查仍保留。
+新增局部功能不重走整片流程；下面八步与完整制作硬规仅在完整制作模式应用。黑灰进度条、暖黄关键词和双行渐出封面都是可选预设，不是全局默认。
+
 ```
 ① 文案 → ② 配音输入+时间戳(本机CPU) → ③ 素材 → ④ SHOTBOOK 层矩阵 → 用户审核确认 → ⑤ 实现(全局系统 → 首镜先做先确认 → 其余镜头)
                                 → ⑥ 渲染 → ⑦ 三重验收（机器闸全过 + 1 轮审片修 P0/P1）→ ⑧ 交付（可选续审 ≤3 轮）
@@ -24,9 +29,15 @@ description: 终极口播视频 skill：中文口播稿 + 成品配音 → CPU �
 可直接从人物视频提取配音；缺少人物视频时先请用户提供，不擅自改成只有旁白与 B-roll 的片子。
 AI 图片 / 视频仅作辅助 B-roll，不替代人物口播视频；人物素材仍按 host-footage.md 做音画同步与安全区检查。
 
-**生成能力先校验再启用**：开工时分别核验生图 API、生视频 API 的配置、鉴权、目标能力与可用性，按 `references/ai-broll.md` §0 记录结果。
+**首次制作先问配置意愿**：首次用本 skill 制作视频时，分别询问是否配置生图模型、生视频模型，允许「现在配置 / 使用已有配置 / 暂不配置」。
+按 `references/ai-broll.md` §0.1 保存用户选择；已有选择或本次已明确表达意愿时直接沿用，不重复问。只讨论、查看或修改 skill 不触发首次制作引导。
+用户选择配置才引导设置，密钥在本地安全填写；选择跳过就关闭对应生成流程，继续正常制作。
+
+**生成能力先校验再启用**：开工时对用户选择启用的能力，分别核验生图 API、生视频 API 的配置、鉴权、目标能力与可用性，按 `references/ai-broll.md` §0 记录结果。
 只有已校验可用的能力才参与③选型；未配置、校验失败或无法确认可用即关闭对应流程，使用真实素材 / 图库 / 动效卡继续。
-不自动安装生成服务、不索要配置、不将未启用的 AI 能力列为缺失素材或制作阻塞。
+不自动安装生成服务；首次询问之外不主动催用户补配置，不将未启用的 AI 能力列为缺失素材或制作阻塞。
+**同显卡生成串行且不设等待时限**：生图 / 生视频共用一个资源名额，前一任务结束才启动下一项；慢不算失败、不自动重提。
+Toonflow/ComfyUI 按 `references/toonflow-comfyui.md` 共享锁、保留远端任务编号；异常后先查旧任务再继续，不影响口播人物视频必需的规则。
 
 **依赖只有一份**：所有口播工程的 `remotion/node_modules` 与 `workbench/node_modules` 都是指向 `<skill根>/runtime/node_modules` 的软链，版本只在
 `runtime/package.json` 里钉（`@remotion/*` 全家同号）。**新片开工第一件事**（用户 2026-09-15 定版：每次新做视频都要检查更新）：
@@ -503,6 +514,7 @@ X [`@VincentWei93`](https://x.com/VincentWei93) ·
 
 | 要做什么 | 看哪里 |
 |---|---|
+| 轻剪口播 / 去重复字幕 / 关键词强调 / 章节 Progress / 首帧封面 / 已确认版本局部返修 | [light-edit-lessons.md](references/light-edit-lessons.md)（先分流；真实样图先确认；含 life-redesign 创作复盘与可选预设） |
 | 定视觉语言（色板/字阶/间距/字幕规范）· 幕底 12 款 | `references/design-language.md`（Apple 范式默认版；§1.1 幕底菜单 → `template/motion-systems/backdrop.tsx`） |
 | 排版：放哪 / 多大 / 怎么对齐（栅格 · 间距令牌 · 居中 · 字阶 · 碰撞 · 校验九项） | `references/layout.md` |
 | 给镜头做背景/主体/文字分层设计 | `references/shot-design.md`（三面工作单 + 七型预设） |
@@ -515,6 +527,7 @@ X [`@VincentWei93`](https://x.com/VincentWei93) ·
 | 口播稿逐句语义标注（②-1）· 选卡候选表 · 卡索引生成 | `references/semantic-annotation.md` · `scripts/semantic_annotate.py` · `scripts/card_match.py` · `scripts/cards_index.py` |
 | 找素材 · 配图采集 · 网页拍摄素材采集（全页 2× 长图 + DOM 坐标 JSON） | `references/broll-sources.md` |
 | AI 配图 / 概念 B-roll / 文生视频 / 图生视频（生成前选型、审核与接入） | `references/ai-broll.md` |
+| 复用用户已配好的 Toonflow / ComfyUI 生图与视频模型 | `references/toonflow-comfyui.md` · `scripts/toonflow_media.mjs`（先配置与只读预检；明确授权后才生成） |
 | 开工体检（③ 素材期 `--media-only` / ④→⑤ 闸全量：人物素材帧率·重复帧·时长·比例 + SHOTBOOK 素材对账·未完成清单） | `scripts/preflight.py` |
 | 静止探针（母版前用真实合成帧差预判 freezedetect） | `scripts/freeze_probe.py` |
 | 人物素材（输入规格 / CPU 抠像 / 人脸安全区）· 与 B-roll 同屏怎么摆 | `references/host-footage.md` + `scripts/face_bbox.py` |
